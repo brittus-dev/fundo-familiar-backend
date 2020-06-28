@@ -1,0 +1,5 @@
+package com.brittus.domain;
+
+public enum TiposTransacao {
+    SOLICITACAO_EMPRESTIMO, AUTORIZACAO_EMPRESTIMO, EMPRESTIMO, SOLICITACAO_DEPOSITO, DEPOSITO;
+}
