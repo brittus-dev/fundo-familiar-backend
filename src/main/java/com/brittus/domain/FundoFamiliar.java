@@ -15,68 +15,78 @@ public class FundoFamiliar {
     private String nome;
     private MonetaryAmount saldo;
     private Familia familia;
+    private MembroDaFamilia operadorDoFundo;
 
     private List<TransacaoFundo> transacoes = new ArrayList<>();
 
-    private static final String TRANSACAO_INVALIDA = "Transação inválida";
+    private static final CurrencyUnit REAIS = Monetary.getCurrency("BRL");
+    private static final MonetaryAmount VALOR_MINIMO_DEPOSITO = Money.of(50, REAIS);
+
+    public static final String TRANSACAO_INVALIDA = "Transação inválida";
+    public static final String INFORME_VALOR_TRANSACAO = "Informe um valor para a transação";
+    public static final String INFORME_A_FAMILIA = "Informe a Família";
+    public static final String INFORME_NOME_FUNDO = "Informe o nome do fundo";
+    public static final String INFORME_OPERADOR = "Informe o operador do fundo";
+    public static final String VALOR_INFORMADO_MENOR_MINIMO_DEPOSITO = "Valor informado menor que o mínimo de " + VALOR_MINIMO_DEPOSITO.toString();
+    public static final String TRANSACAO_SEM_AUTORIZACAO = "Solicite autorização para a transação";
+    public static final String SALDO_INSUFICIENTE = "Saldo insuficiente para o saque";
+    public static final String OPERADOR_NAO_PERTENCE_FAMILIA = "Operador do fundo precisa ser da família";
+    public static final String REQUER_STATUS_ANALISE = "Realize uma solicitação antes dessa operação";
 
     @Deprecated
     public FundoFamiliar() {}
 
-    private FundoFamiliar(MonetaryAmount saldoInicial, Familia familia, String nomeDoFundo) {
+    private FundoFamiliar(MonetaryAmount saldoInicial, Familia familia, String nomeDoFundo, MembroDaFamilia operadorDoFundo) {
 
         this.saldo = saldoInicial;
         this.familia = familia;
         this.nome = nomeDoFundo;
+        this.operadorDoFundo = operadorDoFundo;
     }
 
-    public TransacaoFundo registrarTransacao(TransacaoFundo transacao) {
-
+    public FundoFamiliar registrarTransacao(final TransacaoFundo transacao) {
+        
         Objects.requireNonNull(transacao, TRANSACAO_INVALIDA);
+        Objects.requireNonNull(transacao.getValor(), INFORME_VALOR_TRANSACAO);
 
-        if (!(TiposTransacao.SOLICITACAO_EMPRESTIMO.equals(transacao.getTipoTransacao()) || 
-              TiposTransacao.SOLICITACAO_DEPOSITO.equals(transacao.getTipoTransacao()))) {
-            throw new IllegalArgumentException(TRANSACAO_INVALIDA);
+        switch (transacao.getTipoTransacao()) {
+            case SOLICITACAO_EMPRESTIMO:
+            case SOLICITACAO_DEPOSITO: this.registrarSolicitacao(transacao); break;
+            case DEPOSITO: this.depositar(transacao); break;
+            case EMPRESTIMO: this.emprestar(transacao); break;
+            default: throw new IllegalArgumentException(TRANSACAO_INVALIDA); 
         }
 
-        transacao.atualizaStatus(StatusTransacao.EM_ANALISE);
         transacoes.add(transacao);
-
-        return transacao;
-        
+        return this;
     }
 
-    public void depositar(final TransacaoFundo transacao) {
+    private void registrarSolicitacao(final TransacaoFundo transacao) { 
 
-        if (!TiposTransacao.DEPOSITO.equals(transacao.getTipoTransacao())) {
-            throw new IllegalArgumentException(TRANSACAO_INVALIDA); 
-        }
-        Objects.requireNonNull(transacao.getValor(), "Informe o valor do depósito");
+        transacao.atualizarStatus(StatusTransacao.EM_ANALISE);
+    }
+
+    private void depositar(final TransacaoFundo transacao) {
+        
+        FundoFamiliar.validador().requerStatusEmAnalise(transacao.getStatus());
+        FundoFamiliar.validador().requerValorMinimoDeposito(transacao.getValor());
         this.saldo = this.saldo.add(transacao.getValor());
+        transacao.atualizarStatus(StatusTransacao.CONCLUIDO);
     }
 
-    public void sacar(final TransacaoFundo transacao) throws IllegalArgumentException {
+    private void emprestar(final TransacaoFundo transacao) throws IllegalArgumentException {
         
-        if (!TiposTransacao.EMPRESTIMO.equals(transacao.getTipoTransacao())) {
-            throw new IllegalArgumentException(TRANSACAO_INVALIDA); 
-        }
-
-        Objects.requireNonNull(transacao.getValor(), "Informe um valor para o saque");
-
-        if (transacao.getValor().isGreaterThan(this.saldo)) {
-            throw new IllegalArgumentException("Saldo insuficiente para o saque");
-        }
-
+        FundoFamiliar.validador().requerAutorizacao(transacao.getStatus());
+        FundoFamiliar.validador().requerSaldo(transacao.getValor(), this.getSaldo());
         this.saldo = saldo.subtract(transacao.getValor());
+        transacao.atualizarStatus(StatusTransacao.EM_PROCESSAMENTO);
     } 
 
     public MonetaryAmount getSaldo() {
-
         return saldo;
     }
 
     public Familia getFamilia() {
-
         return familia;
     }
 
@@ -84,16 +94,24 @@ public class FundoFamiliar {
         return nome;
     }
 
+    public MembroDaFamilia getOperadorDoFundo() {
+        return operadorDoFundo;
+    }
+
     public static FundoFamiliarBuild construtor() {
         return new FundoFamiliarBuild();
     }
 
+    public static FundoFamiliarRules validador() {
+        return new FundoFamiliarRules();
+    }
+
     public static class FundoFamiliarBuild {
 
-        private CurrencyUnit brl = Monetary.getCurrency("BRL");
-        private MonetaryAmount saldo = Money.zero(brl);
+        private MonetaryAmount saldo = Money.zero(REAIS);
         private Familia familia;
         private String nome;
+        private MembroDaFamilia operadorDoFundo;
 
         public FundoFamiliarBuild comSaldoInicial(MonetaryAmount saldoInicial) {
 
@@ -113,14 +131,60 @@ public class FundoFamiliar {
             return this;
         }
 
+        public FundoFamiliarBuild operadoPor(MembroDaFamilia operadorDoFundo) {
+
+            FundoFamiliar.validador().requerOperadorDoFundoDaFamilia(familia, operadorDoFundo);
+            this.operadorDoFundo = operadorDoFundo;
+            return this;
+        }
+
         public FundoFamiliar constroi() {
 
-            Objects.requireNonNull(familia, "Infome a Família");
-            Objects.requireNonNull(nome, "Infome o nome do fundo");
+            Objects.requireNonNull(familia, INFORME_A_FAMILIA);
+            Objects.requireNonNull(nome, INFORME_NOME_FUNDO);
+            Objects.requireNonNull(operadorDoFundo, INFORME_OPERADOR);
 
-            return new FundoFamiliar(this.saldo, this.familia, this.nome);
+            return new FundoFamiliar(this.saldo, this.familia, this.nome, this.operadorDoFundo);
         }
 
     }
 
+    public static class FundoFamiliarRules {
+
+        private void requerStatusEmAnalise(StatusTransacao status) {
+
+            if (!StatusTransacao.EM_ANALISE.equals(status)) {
+                throw new IllegalArgumentException(REQUER_STATUS_ANALISE);
+            }
+        }
+
+        private void requerValorMinimoDeposito(MonetaryAmount valor) {
+            
+            if (VALOR_MINIMO_DEPOSITO.isGreaterThan(valor)) {
+                throw new IllegalArgumentException(VALOR_INFORMADO_MENOR_MINIMO_DEPOSITO);
+            }
+        }
+
+        private void requerAutorizacao(StatusTransacao status) {
+
+            if (!StatusTransacao.AUTORIZADO.equals(status)) {
+                throw new IllegalArgumentException(TRANSACAO_SEM_AUTORIZACAO);
+            }
+        }
+
+        private void requerSaldo(MonetaryAmount valorEmprestimo, MonetaryAmount saldo) {
+
+            if (valorEmprestimo.isGreaterThan(saldo)) {
+                throw new IllegalArgumentException(SALDO_INSUFICIENTE);
+            }
+        }
+
+        private void requerOperadorDoFundoDaFamilia(Familia familia, MembroDaFamilia operadorDoFundo) {
+            
+            if (!familia.possuiMembro(operadorDoFundo)) {
+                throw new IllegalArgumentException(OPERADOR_NAO_PERTENCE_FAMILIA);
+            }
+        }
+
+    }
 }

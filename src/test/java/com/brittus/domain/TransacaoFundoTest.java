@@ -34,6 +34,7 @@ public class TransacaoFundoTest {
             .comNome("Emergência Médica")
             .comSaldoInicial(Money.of(100, reais))
             .pertenceAFamilia(familiaBrittus)
+            .operadoPor(brunoBrittus)
             .constroi();
     }
 
@@ -44,76 +45,55 @@ public class TransacaoFundoTest {
             .comMembroDaFamilia(brunoBrittus)
             .noFundoFamiliar(emergenciaMedica)
             .noValorDe(Money.of(50, reais))
-            .realizar(TiposTransacao.SOLICITACAO_EMPRESTIMO)
-            .registra();
+            .comTipo(TiposTransacao.SOLICITACAO_EMPRESTIMO)
+            .constroi();
+
+        emergenciaMedica = emergenciaMedica.registrarTransacao(transacaoFundo);
 
         Assertions.assertEquals("BRL 50", transacaoFundo.getValor().toString());
-        Assertions.assertEquals("bruno@brittus.com", transacaoFundo.getMembroDaFamilia().getEmail().toString());
+        Assertions.assertEquals("bruno@brittus.com", transacaoFundo.getSolicitante().getEmail().toString());
         Assertions.assertEquals(TiposTransacao.SOLICITACAO_EMPRESTIMO, transacaoFundo.getTipoTransacao());
         Assertions.assertEquals(StatusTransacao.EM_ANALISE, transacaoFundo.getStatus());
     }
 
     @Test
-    public void testSolicitacaoDepositoValor() {
+    public void testNovaSolicitacaoDeposito() {
 
         transacaoFundo = TransacaoFundo.construtor()
             .comMembroDaFamilia(brunoBrittus)
             .noFundoFamiliar(emergenciaMedica)
             .noValorDe(Money.of(50, reais))
-            .realizar(TiposTransacao.SOLICITACAO_DEPOSITO)
-            .registra();
-        
+            .comTipo(TiposTransacao.SOLICITACAO_DEPOSITO)
+            .constroi();
+
+        emergenciaMedica = emergenciaMedica.registrarTransacao(transacaoFundo);
+
         Assertions.assertEquals("BRL 50", transacaoFundo.getValor().toString());
-        Assertions.assertEquals("bruno@brittus.com", transacaoFundo.getMembroDaFamilia().getEmail().toString());
+        Assertions.assertEquals("bruno@brittus.com", transacaoFundo.getSolicitante().getEmail().toString());
         Assertions.assertEquals(TiposTransacao.SOLICITACAO_DEPOSITO, transacaoFundo.getTipoTransacao());
         Assertions.assertEquals(StatusTransacao.EM_ANALISE, transacaoFundo.getStatus());
     }
 
-    /*@Test
-    public void testDepositoComValorNulo() {
+    @Test
+    public void testRegistroDeposito() {
 
-        FundoFamiliar fundoFamiliar = FundoFamiliar.construtor()
-            .pertenceAFamilia(familiaBrittus)
-            .comNome("Teste")
+        transacaoFundo = TransacaoFundo.construtor()
+            .comMembroDaFamilia(brunoBrittus)
+            .noFundoFamiliar(emergenciaMedica)
+            .noValorDe(Money.of(50, reais))
+            .comTipo(TiposTransacao.SOLICITACAO_DEPOSITO)
             .constroi();
+
+        emergenciaMedica.registrarTransacao(transacaoFundo);
         
-        Exception exception = Assertions.assertThrows(NullPointerException.class, () -> {
-            fundoFamiliar.depositar(null);
-        });
-
-        String mensagemEsperada = "Informe o valor do depósito";
-        String mensagemRecebida = exception.getMessage();
-
-        Assertions.assertTrue(mensagemRecebida.equals(mensagemEsperada));
+        transacaoFundo = transacaoFundo.comOperador(brunoBrittus).operar(TiposTransacao.DEPOSITO);
+        emergenciaMedica = emergenciaMedica.registrarTransacao(transacaoFundo);
+        
+        Assertions.assertEquals("BRL 50", transacaoFundo.getValor().toString());
+        Assertions.assertEquals("BRL 150", emergenciaMedica.getSaldo().toString());
+        Assertions.assertEquals("bruno@brittus.com", transacaoFundo.getSolicitante().getEmail().toString());
+        Assertions.assertEquals(TiposTransacao.DEPOSITO, transacaoFundo.getTipoTransacao());
+        Assertions.assertEquals(StatusTransacao.CONCLUIDO, transacaoFundo.getStatus());
     }
-
-    @Test
-    public void testSolicitarEmprestimo() {
-
-        FundoFamiliar fundoFamiliar = FundoFamiliar.construtor()
-            .comSaldoInicial(Money.of(100, reais))
-            .constroi();
-        fundoFamiliar.sacar(Money.of(50, reais));
-        Assertions.assertEquals("BRL 50", fundoFamiliar.getSaldo().toString());
-    }
-
-    @Test
-    public void testSolicitarEmprestimoValorAcimaSaldo() {
-
-        FundoFamiliar fundoFamiliar = FundoFamiliar.construtor()
-            .comSaldoInicial(Money.of(100, reais))
-            .constroi();
-
-        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            fundoFamiliar.sacar(Money.of(150, reais));
-        });
-
-        String mensagemEsperada = "Saldo insuficiente para o saque";
-        String mensagemRecebida = exception.getMessage();
-
-        Assertions.assertTrue(mensagemRecebida.equals(mensagemEsperada));
-
-    }*/
-
 
 }

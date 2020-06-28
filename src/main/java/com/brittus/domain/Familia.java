@@ -19,8 +19,12 @@ public class Familia {
         return nome;
     }
 
-    public boolean isMembro(MembroDaFamilia membroDaFamilia) {
+    public boolean possuiMembro(MembroDaFamilia membroDaFamilia) {
         return this.membrosDaFamilia.contains(membroDaFamilia);
+    }
+
+    public long totalMembros() {
+        return this.membrosDaFamilia.size();
     }
 
     public void adiciona(MembroDaFamilia membroDaFamilia) {
