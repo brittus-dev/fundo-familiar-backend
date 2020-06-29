@@ -2,6 +2,7 @@ package com.brittus.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Familia {
     
@@ -37,7 +38,7 @@ public class Familia {
     }
 
     public static Familia dos(String nome) {
-        return new Familia(nome);
+        return new Familia(Objects.requireNonNull(nome));
     }
 
 }

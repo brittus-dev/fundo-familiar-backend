@@ -9,17 +9,15 @@ public class MembroDaFamilia {
     private String nome;
     private Email email;
     private String telefone;
-    private FuncoesNaFamilia funcao;
 
     @Deprecated()
     public MembroDaFamilia() {}
 
-    private MembroDaFamilia(String nome, Email email, String telefone, FuncoesNaFamilia funcao) {
+    private MembroDaFamilia(String nome, Email email, String telefone) {
         
         this.nome = nome;
         this.email = email;
         this.telefone = telefone;
-        this.funcao = funcao;
     }
 
     public String getNome() {
@@ -34,45 +32,8 @@ public class MembroDaFamilia {
         return telefone;
     }
 
-    public FuncoesNaFamilia getFuncao() {
-        return funcao;
-    }
-
     public static MembroDaFamiliaBuilder construtor() {
         return new MembroDaFamiliaBuilder();
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-    public void setEmail(Email email) {
-        this.email = email;
-    }
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
-    }
-    public void setFuncao(FuncoesNaFamilia funcao) {
-        this.funcao = funcao;
-    }
-
-    public MembroDaFamilia nome(String nome) {
-        this.nome = nome;
-        return this;
-    }
-
-    public MembroDaFamilia email(Email email) {
-        this.email = email;
-        return this;
-    }
-
-    public MembroDaFamilia telefone(String telefone) {
-        this.telefone = telefone;
-        return this;
-    }
-
-    public MembroDaFamilia funcao(FuncoesNaFamilia funcao) {
-        this.funcao = funcao;
-        return this;
     }
 
     @Override
@@ -83,12 +44,12 @@ public class MembroDaFamilia {
             return false;
         }
         MembroDaFamilia membroDaFamilia = (MembroDaFamilia) o;
-        return Objects.equals(nome, membroDaFamilia.nome) && Objects.equals(email, membroDaFamilia.email) && Objects.equals(telefone, membroDaFamilia.telefone) && Objects.equals(funcao, membroDaFamilia.funcao);
+        return Objects.equals(nome, membroDaFamilia.nome) && Objects.equals(email, membroDaFamilia.email) && Objects.equals(telefone, membroDaFamilia.telefone);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nome, email, telefone, funcao);
+        return Objects.hash(nome, email, telefone);
     }
 
     @Override
@@ -97,7 +58,6 @@ public class MembroDaFamilia {
             " nome='" + getNome() + "'" +
             ", email='" + getEmail() + "'" +
             ", telefone='" + getTelefone() + "'" +
-            ", funcao='" + getFuncao() + "'" +
             "}";
     }
     
@@ -107,7 +67,6 @@ public class MembroDaFamilia {
         private String nome;
         private Email email;
         private String telefone;
-        private FuncoesNaFamilia funcao;
 
         public MembroDaFamiliaBuilder comNome(String nome) {
             
@@ -127,15 +86,9 @@ public class MembroDaFamilia {
             return this;
         }
 
-        public MembroDaFamiliaBuilder comFuncao(FuncoesNaFamilia funcao) {
-
-            this.funcao = Objects.isNull(funcao) ? FuncoesNaFamilia.SEM_FUNCAO : funcao;
-            return this;
-        }
-        
         public MembroDaFamilia constroi() {
             
-            return new MembroDaFamilia(this.nome, this.email, this.telefone, this.funcao);
+            return new MembroDaFamilia(this.nome, this.email, this.telefone);
         }
         
     }

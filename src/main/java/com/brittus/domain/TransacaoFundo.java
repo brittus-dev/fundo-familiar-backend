@@ -6,8 +6,14 @@ import java.util.List;
 import java.util.Objects;
 import javax.money.MonetaryAmount;
 
+import org.bson.types.ObjectId;
+
+import io.quarkus.mongodb.panache.MongoEntity;
+
+@MongoEntity(collection = "transacoes")
 public class TransacaoFundo {
 
+    public ObjectId id;
     private MembroDaFamilia operador;
     private MembroDaFamilia solicitante;
     private FundoFamiliar fundoFamiliar;

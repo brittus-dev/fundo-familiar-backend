@@ -8,7 +8,7 @@ import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import javax.money.MonetaryAmount;
 
-import org.javamoney.moneta.Money; 
+import org.javamoney.moneta.Money;
 
 public class FundoFamiliar {
     
