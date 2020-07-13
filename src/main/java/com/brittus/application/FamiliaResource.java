@@ -27,6 +27,13 @@ public class FamiliaResource {
         return FamiliaDB.listAll();
     }
 
+    @GET
+    @Path("/{idFamilia}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public FamiliaDB buscaFamiliaPorId(@PathParam("idFamilia") String id) {
+        return FamiliaDB.findById(new ObjectId(id));
+    }
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response postFamilia(FamiliaDB familiaDB) {
