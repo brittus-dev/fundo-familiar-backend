@@ -1,7 +1,9 @@
 package com.brittus.application;
 
+import java.math.BigDecimal;
 import java.util.List;
 
+import javax.money.Monetary;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -87,18 +89,14 @@ public class FamiliaResource {
     @Path("/{idFamilia}/fundos")
     @Produces(MediaType.APPLICATION_JSON)
     public List<FundoFamiliarDB> getFundos(@PathParam("idFamilia") String idFamilia) {
-
-        return FundoFamiliarDB.listAll();
+        return FundoFamiliarDB.find("idFamilia = ?1", idFamilia).list();
     }
 
     @POST
     @Path("/{idFamilia}/fundos")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response postFundos(@PathParam("idFamilia") String idFamilia, FundoFamiliarDB fundo) {
-
         fundo.persist();
-
-
         return Response.ok().build();
     }
 
